@@ -1,0 +1,119 @@
+<meta charset="utf-8" emacsmode="-*- markdown -*-">
+
+                            **Rotating a point (properly)**
+
+Introduction
+===============================================================================
+Points can be subtracted to form vectors, or vectors can be added to points to form other points, these operations are well defined regardless of the origin, and the coordinate system we are using. They will always work, on any coordinate system and origin you pick. 
+
+But rotation of a point is completely meaningless without an origin. Imagine the point below, Where it is supposed to lance after a 30 degree rotation?
+
+*************************************
+*                                   * 
+*                                   * 
+*                         *         * 
+*                                   * 
+*                                   * 
+*                                   * 
+*                                   * 
+*************************************
+
+If we provide an origin, we can define the rotation around that origin.
+
+**************************
+*              P         * 
+*             *          * 
+*            /|          * 
+*         r              * 
+*       |  /  | y        * 
+*       |                * 
+*       |/a   |          * 
+* ------.------          * 
+*       |  x             * 
+*       |                * 
+**************************
+
+
+Given the image above, we have a point P, with coordinates (x,y), forming an angle a, and at r units from the origin. 
+
+$$P = (x,y)$$
+
+From a, r, also we can say:
+
+$$ x = r\cos(a) $$
+$$ y = r\cos(a) $$
+
+If a is not known but, x, and y is, we can compute a and r as
+$$ r = \sqrt{x^2+y^2} $$
+$$ a = \arctan \frac{y}{x} $$
+
+
+The bad way...
+-------------------------------------------------------------------------------
+
+Given a point the worst possible way to rotate is to first compute the angle a, then add to that angle the desired angle to rotate and finally compute the coordinates of the result. Something like this:
+
+$$ P = (x,y) $$
+$$ r = \sqrt{x^2+y^2} $$
+$$ a = \arctan \frac{y}{x} $$
+$$ a' = a + 0.2 $$
+$$ x' = r\cos(a') $$
+$$ y' = r\sin(a') $$
+$$ P' = (x',y') $$
+
+If we are rotating a point, from time to time, this could be acceptable. But if you need to rotate more than one point (for example a whole figure) by the same amount, the this method is a waste of computing resources. 
+
+The proper way
+-------------------------------------------------------------------------------
+
+We are going to use the following formulas:
+
+$$ \cos(a+b) = \cos a \cos b - \sin a \sin b $$
+$$ \sin(a+b) = \sin a \cos b + \cos a \sin b $$
+
+Those formulas can be derived after placing two right triangles on top of each other with angles a and b. Also, they can be seen as a way of rotating a point without ever finding out the exact angle that point makes relative to the origin.
+
+First start by computing the $\cos 0.2$ and $\sin 0.2$ if 0.2 is the amount (in radians) we want to rotate a given point. See that we do this first, without any care of the point we will rotate. 
+
+$$ cb = \cos 0.2 $$
+$$ sb = \sin 0.2 $$
+
+Remembering that the final $x'$ will be:
+
+$$ x' = r\cos(a+b) = r(\cos{a} \cos{b} - \sin{a}\sin{b})$$
+
+We can now substitute $cb$ and $sb$
+
+$$ x' = r\cos(a+b) = r(\cos{a} cb - \sin{a}sb) = r\cos{a}cb - r\sin{a}sb$$
+
+The next thing we must compute is $\cos a$ and $\sin a$ but, not the angle itself, we can relay on the definition of cos and sin to do so. 
+
+$$ \cos{a} = \frac{x}{r} $$
+$$ \sin{a} = \frac{y}{r} $$
+
+If we substitute in the equation above:
+
+$$ x' = r\cos(a+b) =r\frac{x}{r}cb - r \frac{y}{r}sb = x cb - y sb $$
+
+We can do the same thing for $y'$, in the end there was no need to compute the angle, nor the distance (r) from the origin. The rotations turns out to be:
+
+$$ x' = x cb - y sb $$
+$$ y' = x sb + y cb $$
+
+Remember, this method will only rotate around the origin. If you want to rotate around another point, you must first transform the figure so the pivot lays at (0,0).
+
+The good thing about this method is not to rotate just one point, but when you need to rotate several of them the same amount. We can compute $cb$ and $sb$ just once for the whole lot, and we can reuse the result to rotate all the points without ever computing any angle for any of them.
+
+
+
+
+
+
+
+
+
+
+<!--
+	<link rel="stylesheet" href="https://casual-effects.com/markdeep/latest/latex.css?">
+-->
+<!-- Markdeep: --><style class="fallback">body{visibility:hidden}</style><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js?"></script>
