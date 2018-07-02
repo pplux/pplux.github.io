@@ -1,0 +1,122 @@
+<meta charset="utf-8" emacsmode="-*- markdown -*-">
+
+                            **Reverse SSH Tunnel**
+Howto
+===============================================================================
+An script to create a reverse tunnel to connect to a linux machine through a 
+jumpbox server. First, you have to configure a passwordless SSH connection.
+
+passwordless ssh login
+---------------------------
+
+On the client create a ssh key with ssh-keygen, do not enter any password:
+```bash
+~$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/user/.ssh/id_rsa):
+Created directory '/home/user/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/user/.ssh/id_rsa.
+Your public key has been saved in /home/user/.ssh/id_rsa.pub.
+The key fingerprint is:
+SHA256:o8GGK+zMJFff42GzD7T2r9HPt7ICOaC4eKocX9S2XVQ user@ClientMachine
+The key's randomart image is:
++---[RSA 2048]----+
+|             A   |
+|            .    |
+|           .     |
+|     oo   .      |
+|   .oo=+S. .     |
+| ..oo=.+*o.      |
+|.o=.o.@..+.      |
+|oB=..+ B ..o. .  |
+|+++.  o.+o..++.. |
++----[SHA256]-----+
+```
+
+Copy ``~/.ssh/id_rsa.pub`` to the jumbpox server and edit ``~/.ssh/authorized_keys``.
+
+```bash
+cd ~/.ssh
+cat path_to_id_rsa/id_rsa.pub >> authorized_keys
+chmod 600 authorized_keys
+```
+
+You should now be able to login into the jumbpox server without password from the client
+machine.
+
+sshd config
+------------
+On the jumpbox server, configure sshd (etc/ssh/sshd_config) to keep the connection
+alive:
+
+```
+   TCPKeepAlive yes
+   ClientAliveInterval 60
+```
+
+client config
+-------------
+On the client configure crontab to keep trying to connect to the server.
+```
+crontab -e
+```
+add
+```crontab
+*/1 * * * * ~/create_ssh_tunnel.sh > tunnel.log 2>&1
+```
+
+Client must have ssh running, but it can listen only to 127.0.0.1, that way you will prevent login
+from anywhere but the jumbpox server.
+
+
+Code
+===============================================================================
+This is the script that will try to connect to he jumpbox server, change the path and
+name accordingly to your crontab config.
+
+```bash
+#!/bin/bash
+
+PORT=$((22200+1))
+SERVER=backdoor@fakeserver.com
+
+
+createTunnel() {
+  /usr/bin/ssh -oExitOnForwardFailure=yes -N -R $PORT:localhost:22 $SERVER
+  if [[ $? -eq 0 ]]; then
+    echo Tunnel to $SERVER created successfully
+  else
+    echo An error occurred creating a tunnel to $SERVER
+  fi
+}
+
+/bin/pidof ssh
+if [[ $? -ne 0 ]]; then
+  echo Creating new tunnel connection
+  createTunnel
+fi
+```
+
+The script must have the execution bit set ``chmod 700 tunnel.sh`` for the crontab to be able to 
+run it.
+
+Connection to the client from the jumpbox server
+================================================
+
+To connect back to the client from the jumpbox server, log in first to
+the server and then log in to the client as shown
+
+```
+ssh user@localhost -p 22201
+```
+
+If you're planning to use this with several client machines, remember to assign a unique local port to each one.
+
+
+
+<!--
+	<link rel="stylesheet" href="https://casual-effects.com/markdeep/latest/latex.css?">
+-->
+<!-- Markdeep: --><style class="fallback">body{visibility:hidden}</style><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js?"></script>
