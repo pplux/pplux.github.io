@@ -1,6 +1,8 @@
 <meta charset="utf-8" emacsmode="-*- markdown -*-">
 
                             **Reverse SSH Tunnel**
+			    Jose L. Hidalgo (*PpluX*)
+			          2018/7/2
 Howto
 ===============================================================================
 An script to create a reverse tunnel to connect to a linux machine through a 
@@ -35,7 +37,7 @@ The key's randomart image is:
 +----[SHA256]-----+
 ```
 
-Copy ``~/.ssh/id_rsa.pub`` to the jumbpox server and edit ``~/.ssh/authorized_keys``.
+Copy `~/.ssh/id_rsa.pub` to the jumbpox server and edit `~/.ssh/authorized_keys`.
 
 ```bash
 cd ~/.ssh
@@ -102,7 +104,7 @@ fi
 The script must have the execution bit set ``chmod 700 tunnel.sh`` for the crontab to be able to 
 run it.
 
-Connection to the client from the jumpbox server
+Connecting to the client from the jumpbox server
 ================================================
 
 To connect back to the client from the jumpbox server, log in first to
