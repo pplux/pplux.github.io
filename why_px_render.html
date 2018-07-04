@@ -1,0 +1,84 @@
+<meta charset="utf-8" emacsmode="-*- markdown -*-">
+
+                            **px_render.h rationale**
+			    Jose L. Hidalgo (*PpluX*)
+			          4th July 2018
+
+[px_render](https://github.com/pplux/px/blob/master/px_render.hhttps://github.com/pplux/px/blob/master/px_render.h) is a single header C++ low level rendering library with the following features:
+
+* **Single header, No dependencies, easy to integrate** : Written in C++14, as a bit large header, but super easy to integrate on a project, inspired by the fantastic [stb libraries](https://github.com/nothings/stb)
+
+* **multithreaded from the core**: Almost everything in the library can be used without explicit locking, and it is meant to be used in multiple thread application, best suited for task based scheduling like [px_sched.h](https://github.com/pplux/px/blob/master/px_render.h)
+
+* **reentrant API**: No global data or singletons, everything works on top of `context` object and multiple instances can coexists. That is useful if you plan to use multiple rendering windows (one context per window).
+
+* **Command based**: In order to render you first need to accumulate all the rendering commands on a DisplayList and then submit that to the RenderContext. This is really handy on multithreaded applications, where more than one frame could be computed at any given time.
+
+* **render backend agnostic**: The API itself do not depend on any render backend, right now only OpenGL/WebGL is supported but it is planned to add more backends.
+
+* **Immutable Objects**: All objects instantiated are immutable, they can not be changed directly, the only way to change an object is with a command, that's why there are commands like FillTexture of FillBuffer. This might seem strange at first, but is the only sane way to support multiple threads creating display lists in parallel.
+
+* **No pointers only handlers**: px_render returns handles to objects, and it is able to detect dangling references to destroyed resources and warn about them. [@FlohOfWoe](https://twitter.com/FlohOfWoe) wrote about this recently [here](http://floooh.github.io/2018/06/17/handles-vs-pointers.htmlhttp://floooh.github.io/2018/06/17/handles-vs-pointers.html)
+
+px_render is not a game engine, but could be the render backbone. You should
+probably not consider making a game engine, most of the time it is not worth
+the time, but that doesn't necessary means you should be using a standard
+game engine either. In most cases for any given game or application, it is
+best to have the proper set of tools and code on top of that. When something
+turns out to be useful in several projects, that common denominator could be
+refactored into a new library, or maybe that could be the start of a game engine
+ by itself.
+
+px_render aims to help develop multithreaded applications with proper support for rendering, in 
+combination with [px_sched.h](https://github.com/pplux/px/blob/master/px_render.h) and GLFW, SDL or [sokol_app](https://github.com/floooh/sokol/blob/master/sokol_app.h) one might have a good bag of tools to start with.
+
+(##) Alternatives
+
+There are many alternatives to px_render, but I would only consider two at the moment, [bgfx](https://github.com/bkaradzic/bgfx) and 
+[sokol_gfx](https://github.com/floooh/sokol/blob/master/sokol_gfx.h). I've used both libraries, and both are great, and 
+even though I like both libraries very much I still felt compelled to create px_render, I would try to do my best to explain why.
+
+Let's begin with **bgfx** since it is the one I've used the most, and still use. 
+
+  * bgfx is easy to integrate, well it depends on *bx* and *bimg*, and there are some nuances here and there but mostly *bgfx* is easy to use and adopt.
+  * it has lots of render backends, it is able to render in almost every single render backend you might have heard of
+  * it supports lots of high end render features, not on all platforms, but you can query whether a feature is supported at runtime
+  * it has great support and a fairly large community, it is updated very often
+  * [@bkaradzic](https://twitter.com/bkaradzic) is a really top coder, you can definitely rely on bgfx without any doubt.
+
+But... 
+
+  * bgfx records render commands in global variables (or thread local variables), making impossible to use a task-based scheduler if you want to split your render between different tasks that might be executed from different threads.
+  * bgfx relies on a command line tool to compile the shaders, and by the very nature of the backends, you end up by having to know in witch backend are you working with in other to load the proper precompiled shader.
+  * also this tool (`shaderc`) has massive hacks to make it work from GLSL to HLSL,GLES, etc... it is impressive though.
+  * it is difficult to add a new feature, you have to make sure it works on all backends.
+  * it is almost impossible to add a specific feature to a given backend (for example, needed to use GL_OES_EGL_image_external no android we ended up writing our own GL code, and then convert the resulting texture into a bgfx texture to use it.)
+  * if you're planning on loading textures on your own, it would be nice not to compile bimg.
+  * you might or not, whant to use bx either, but as with bimg, bgfx depends on it.
+
+I still use bgfx, it works nicely, and for every single con you can work around it.
+
+sokol_gfx on the other side:
+	
+	* it is tiny, yet it has almost all the basic features you might need for rendering, but still is almost a single header library.
+	* it also supports many render backends
+	* it has lots of nice insights like the `Pipeline` object to represent a whole render state, very much like modern render API like metal or vulkan
+	* it is implemented in plain C
+	* it is also very slim, it doesn't provide texture loader, or depends on a math library, and so on
+	* it is easy to add something, since you work in single threaded mode you can always call manually to your render hack.
+	* it doesn't try to hide shader code from you, you have to use the proper shader code depending on the platform you are targeting. I believe this is the right choice, since the user of bgfx/sokol_gfx should probably be able to write that code anyway.
+	* again [@FlohOfWoe](https://twitter.com/FlohOfWoe) is another really top coder, in fact he is really nice with people asking questions about the project or contributing with him.
+	
+But...
+
+	* sokol_gfx is not thread safe, everything must be called from the GPU/Render thread
+	* the API is not reentrant, so you can not compile a set of commands to send to the GPU thread later
+	* The beauty of C initializer that you can see in the examples doesn't compile as C++, not until C++20 comes along
+	* I have the impression that it is very focused to be WebGL compatible, so these problems might not be a priority.
+	
+	Again, I've used sokol_gfx on a couple of hobby projects, and it is a wonder. But as with bgfx not being able to record commands on different tasks, to later send to the GPU, motivated me to start working on px_render.
+
+	px_render is more similar to sokol_gfx, but with some good features I liked from bgfx. In another post, I will write a tutorial on how to use it.
+
+	<link rel="stylesheet" href="https://casual-effects.com/markdeep/latest/dark.css?">
+<!-- Markdeep: --><style class="fallback">body{visibility:hidden}</style><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js?"></script>
