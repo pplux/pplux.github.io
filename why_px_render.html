@@ -10,7 +10,7 @@
 
 * **multithreaded from the core**: Almost everything in the library can be used without explicit locking, and it is meant to be used in multiple thread application, best suited for task based scheduling like [px_sched.h](https://github.com/pplux/px/blob/master/px_sched.h)
 
-* **reentrant API**: No global data or singletons, everything works on top of `context` object and multiple instances can coexists. That is useful if you plan to use multiple rendering windows (one context per window).
+* **reentrant API**: No global data or singletons, everything works on top of `context` object and multiple instances can coexist. That is useful if you plan to use multiple rendering windows (one context per window), or you want to restart the application (for example on mobile devices).
 
 * **Command based**: In order to render you first need to accumulate all the rendering commands on a DisplayList and then submit that to the RenderContext. This is really handy on multithreaded applications, where more than one frame could be computed at any given time.
 
