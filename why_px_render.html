@@ -52,9 +52,9 @@ But...
   * bgfx relies on a command line tool to compile the shaders, and by the very nature of the backends, you end up by having to know in witch backend are you working with in other to load the proper precompiled shader.
   * also this tool (`shaderc`) has massive hacks to make it work from GLSL to HLSL,GLES, etc... it is impressive though.
   * it is difficult to add a new feature, you have to make sure it works on all backends.
-  * it is almost impossible to add a specific feature to a given backend (for example, needed to use GL_OES_EGL_image_external no android we ended up writing our own GL code, and then convert the resulting texture into a bgfx texture to use it.)
+  * it is almost impossible to add a specific feature to a given backend (for example, we needed to use GL_OES_EGL_image_external on android, we ended up writing our own GL code, and then convert the resulting texture into a bgfx texture to use it.)
   * if you're planning on loading textures on your own, it would be nice not to compile bimg.
-  * you might or not, whant to use bx either, but as with bimg, bgfx depends on it.
+  * you might or not, want to use bx either, but as with bimg, bgfx depends on it.
 
 I still use bgfx, it works nicely, and for every single con you can work around it.
 
