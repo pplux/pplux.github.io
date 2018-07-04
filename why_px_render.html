@@ -8,7 +8,7 @@
 
 * **Single header, No dependencies, easy to integrate** : Written in C++14, as a bit large header, but super easy to integrate on a project, inspired by the fantastic [stb libraries](https://github.com/nothings/stb)
 
-* **multithreaded from the core**: Almost everything in the library can be used without explicit locking, and it is meant to be used in multiple thread application, best suited for task based scheduling like [px_sched.h](https://github.com/pplux/px/blob/master/px_render.h)
+* **multithreaded from the core**: Almost everything in the library can be used without explicit locking, and it is meant to be used in multiple thread application, best suited for task based scheduling like [px_sched.h](https://github.com/pplux/px/blob/master/px_sched.h)
 
 * **reentrant API**: No global data or singletons, everything works on top of `context` object and multiple instances can coexists. That is useful if you plan to use multiple rendering windows (one context per window).
 
