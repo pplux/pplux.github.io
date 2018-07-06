@@ -48,7 +48,8 @@ Let's begin with **bgfx** since it is the one I've used the most, and still use.
 
 But... 
 
-  * bgfx records render commands in global variables (or thread local variables), making impossible to use a task-based scheduler if you want to split your render between different tasks that might be executed from different threads.
+  * ~~bgfx records render commands in global variables (or thread local variables), making impossible to use a task-based scheduler if you want to split your render between different tasks that might be executed from different threads.~~ Actually, bgfx can submit render commands from any thread, they are stored in the a object called `Encoder` (nice!).
+  * *edited:* Just realized that buffers and textures have state and can be updated, not as part of a encoded render command, that's generally not an issue, but if you update a buffer/texture every frame but encode from multiple threads, that might be inconsistent. 
   * bgfx relies on a command line tool to compile the shaders, and by the very nature of the backends, you end up by having to know in witch backend are you working with in other to load the proper precompiled shader.
   * also this tool (`shaderc`) has massive hacks to make it work from GLSL to HLSL,GLES, etc... it is impressive though.
   * it is difficult to add a new feature, you have to make sure it works on all backends.
@@ -56,7 +57,7 @@ But...
   * if you're planning on loading textures on your own, it would be nice not to compile bimg.
   * you might or not, want to use bx either, but as with bimg, bgfx depends on it.
 
-I still use bgfx, it works nicely, and for every single con you can work around it.
+ I still use bgfx, it works nicely, and for every single con you can work around it, it's a awesome library. *edited:* [@bkaradzic](https://twitter.com/bkaradzic) has answered to those ["but..." here](https://gist.github.com/bkaradzic/d3977bdea59d2e217c07c1286491a0a1#response-to-px_renderh-rationale--but-section-of-bgfx).
 
 sokol_gfx on the other side:
 	
@@ -76,11 +77,11 @@ But...
 	* The beauty of C initializer that you can see in the examples doesn't compile as C++, not until C++20 comes along
 	* I have the impression that it is very focused to be WebGL compatible, so these problems might not be a priority.
 	
-	Again, I've used sokol_gfx on a couple of hobby projects, and it is a wonder. But as with bgfx not being able to record commands on different tasks, to later send to the GPU, motivated me to start working on px_render.
+	Again, I've used sokol_gfx on a couple of hobby projects, and it is a wonder.
 
-	px_render is more similar to sokol_gfx, but with some good features I liked from bgfx. In another post, I will write a tutorial on how to use it.
+  In the end I just wanted something similar and light as sokol_gfx, with some things I find useful from bgfx, but multithread from the very beginning and oriented to commands, that's what I started px_render. 
 
-Meanwhile I have lots of work to do to catch up with bgfx and sokol_gfx, currently px_render supports only OpenGL/WebGL and there are some features missing. But, I believe that only the code that gets used should be written, so my next task is to write demos, and if there is something I need for a demo then I will add it to px_render. 
+Meanwhile I have lots of work to do to catch up with bgfx and sokol_gfx, currently px_render supports only OpenGL/WebGL and there are some features missing. But, I believe that only the code that gets used should be written, so my next task is to write demos, and if there is something I need for a demo then it will be added to px_render. 
 
 	<link rel="stylesheet" href="https://casual-effects.com/markdeep/latest/dark.css?">
 <!-- Markdeep: --><style class="fallback">body{visibility:hidden}</style><script src="https://casual-effects.com/markdeep/latest/markdeep.min.js?"></script>
